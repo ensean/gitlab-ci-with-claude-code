@@ -23,7 +23,7 @@ gendev:
     - npm install -g @anthropic-ai/claude-code
 
   script:
-    - env # check envs
+    - /bin/gitlab-mcp-server || true
     # Use GENDEV_FLOW_* variables when invoking via web/API triggers with context payloads
     - echo "$GENDEV_FLOW_INPUT for $GENDEV_FLOW_CONTEXT on $GENDEV_FLOW_EVENT"
     - >
