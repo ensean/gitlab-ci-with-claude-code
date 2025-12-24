@@ -1,0 +1,28 @@
+image: maven:3.8.6-openjdk-11
+
+stages:
+  - build
+  - test
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+
+build:
+  stage: build
+  script:
+    - mvn clean compile
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 hour
+
+test:
+  stage: test
+  script:
+    - mvn test
+  dependencies:
+    - build
