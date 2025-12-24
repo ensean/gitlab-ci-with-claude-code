@@ -1,6 +1,7 @@
 image: maven:3.8.6-openjdk-11
 
 stages:
+  - gendev
   - build
   - test
 
@@ -10,6 +11,35 @@ variables:
 cache:
   paths:
     - .m2/repository
+
+gendev:
+  stage: gendev
+  image: node:24-alpine3.21
+  tags:
+    - java
+  before_script:
+    - apk update
+    - apk add --no-cache git curl bash
+    - npm install -g @anthropic-ai/claude-code
+
+  script:
+    # Use GENDEV_FLOW_* variables when invoking via web/API triggers with context payloads
+    - echo "$GENDEV_FLOW_INPUT for $GENDEV_FLOW_CONTEXT on $GENDEV_FLOW_EVENT"
+    - >
+      claude
+      -p "${GENDEV_FLOW_INPUT:-'Review this MR and implement the requested changes'}"
+      --permission-mode acceptEdits
+      --allowedTools "Bash(*) Read(*) Edit(*) Write(*) mcp__gitlab"
+      --debug
+  variables:
+    AWS_REGION: "ap-northeast-1"
+    CLAUDE_CODE_USE_BEDROCK: "1"
+    AWS_BEARER_TOKEN_BEDROCK: "$AWS_BEARER_TOKEN"
+    ANTHROPIC_MODEL: "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+
+  only:
+    - merge_requests
+  allow_failure: true
 
 build:
   stage: build
