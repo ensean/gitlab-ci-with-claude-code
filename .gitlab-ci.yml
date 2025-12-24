@@ -25,10 +25,10 @@ gendev:
   script:
     - /bin/gitlab-mcp-server || true
     # Use GENDEV_FLOW_* variables when invoking via web/API triggers with context payloads
-    - echo "$GENDEV_FLOW_INPUT for $GENDEV_FLOW_CONTEXT on $GENDEV_FLOW_EVENT"
+    - echo "$AI_FLOW_INPUT for $AI_FLOW_CONTEXT on $AI_FLOW_EVENT"
     - >
       claude
-      -p "${GENDEV_FLOW_INPUT:-'Review this MR and implement the requested changes'}"
+      -p "${AI_FLOW_INPUT:-'Review this MR and implement the requested changes'}"
       --permission-mode acceptEdits
       --allowedTools "Bash(*) Read(*) Edit(*) Write(*) mcp__gitlab"
       --debug
