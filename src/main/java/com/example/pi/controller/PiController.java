@@ -17,15 +17,29 @@ public class PiController {
     @Autowired
     private PiCalculatorService piCalculatorService;
 
+    private static final long MAX_ITERATIONS = 100000000L;
+
     @GetMapping("/calculate-pi")
     public Map<String, Object> calculatePi(
             @RequestParam(defaultValue = "1000000") long iterations) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        if (iterations <= 0) {
+            response.put("error", "Iterations must be greater than 0");
+            return response;
+        }
+        
+        if (iterations > MAX_ITERATIONS) {
+            response.put("error", "Iterations exceeds maximum allowed value of " + MAX_ITERATIONS);
+            response.put("maxIterations", MAX_ITERATIONS);
+            return response;
+        }
         
         long startTime = System.currentTimeMillis();
         double piValue = piCalculatorService.calculatePi(iterations);
         long endTime = System.currentTimeMillis();
         
-        Map<String, Object> response = new HashMap<>();
         response.put("iterations", iterations);
         response.put("piValue", piValue);
         response.put("actualPi", Math.PI);
