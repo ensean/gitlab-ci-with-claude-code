@@ -13,6 +13,8 @@ cache:
 
 build:
   stage: build
+  tags:
+    - java
   script:
     - mvn clean compile
   artifacts:
@@ -22,6 +24,8 @@ build:
 
 test:
   stage: test
+  tags:
+    - java
   script:
     - mvn test
   dependencies:
