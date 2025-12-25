@@ -1,63 +1,124 @@
-# Pi Calculator - 蒙特卡洛方法计算π
+# Pi Calculator - Monte Carlo Method
 
-基于 Java 11 和 Spring Boot 的π值计算器，使用蒙特卡洛方法。
+A Spring Boot application (Java 11) that calculates π using the Monte Carlo method, with automated code review powered by Claude Code in GitLab CI/CD.
 
-## 项目说明
+## Project Overview
 
-该项目提供 REST API 接口，允许用户指定迭代步骤数量来计算π的近似值。
+This project provides a REST API that allows users to specify the number of iterations to calculate an approximate value of π using the Monte Carlo method. It includes both single-threaded and parallel (multi-core) computation options.
 
-### 蒙特卡洛方法原理
+### Monte Carlo Method Principle
 
-在单位正方形 [0,1] × [0,1] 内随机生成点，计算落在1/4圆（半径为1）内的点的比例：
-- 正方形面积 = 1
-- 1/4圆面积 = π/4
-- π ≈ 4 × (圆内点数 / 总点数)
+Random points are generated within a unit square [0,1] × [0,1], and the ratio of points falling inside a quarter circle (radius 1) is calculated:
+- Square area = 1
+- Quarter circle area = π/4
+- π ≈ 4 × (points inside circle / total points)
 
-## 运行项目
+## GitLab CI/CD with Claude Code Integration
+
+This project demonstrates automated code review using Claude Code in GitLab CI pipelines.
+
+### Pipeline Stages
+
+1. **gendev** - Automated code review on merge requests
+2. **build** - Compile the Java application
+3. **test** - Run unit tests
+
+### Claude Code Review Stage
+
+The `gendev` stage automatically:
+- Fetches code changes from merge requests
+- Sends the diff to Claude Code for AI-powered review
+- Posts review feedback as comments on the merge request
+
+**Key Features:**
+- Runs only on merge requests
+- Uses AWS Bedrock with Claude Sonnet 4.5
+- Provides code quality feedback, identifies potential issues, and suggests improvements
+- Non-blocking (allows pipeline to continue even if review fails)
+
+### Setup Requirements
+
+**GitLab CI/CD Variables:**
+Set these in your GitLab project settings (Settings → CI/CD → Variables):
+
+- `GITLAB_TOKEN` - Personal access token with `api` scope (required to post MR comments)
+- `AWS_BEARER_TOKEN_BEDROCK` - AWS credentials for Bedrock access
+
+**GitLab Runner:**
+- Requires Docker executor for running containers
+
+### CI Configuration Highlights
+
+```yaml
+gendev:
+  stage: gendev
+  image: node:24-alpine3.21
+  script:
+    - git diff origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME...HEAD > changes.diff
+    - claude -p "Review the code changes in changes.diff file..."
+    - Post review results to MR via GitLab API
+  only:
+    - merge_requests
+```
+
+## Running the Application
 
 ```bash
 mvn spring-boot:run
 ```
 
-## API 接口
+## API Endpoints
 
-### 计算π值
+### Calculate Pi
 
-**端点**: `GET /api/calculate-pi`
+**Endpoint**: `GET /api/calculate-pi`
 
-**参数**:
-- `iterations` (可选): 迭代次数，默认值为 1000000
+**Parameters**:
+- `iterations` (optional): Number of iterations, default 1,000,000, max 100,000,000
+- `parallel` (optional): Use multi-core parallel computation, default `false`
 
-**示例请求**:
+**Example Requests**:
 ```bash
-# 使用默认迭代次数
+# Single-threaded with default iterations
 curl http://localhost:8080/api/calculate-pi
 
-# 指定迭代次数
-curl http://localhost:8080/api/calculate-pi?iterations=10000000
+# Parallel computation with 10 million iterations
+curl "http://localhost:8080/api/calculate-pi?iterations=10000000&parallel=true"
 ```
 
-**响应示例**:
+**Response Example**:
 ```json
 {
   "iterations": 10000000,
   "piValue": 3.1415926,
   "actualPi": 3.141592653589793,
   "error": 0.0000000535897933,
-  "executionTimeMs": 245
+  "executionTimeMs": 245,
+  "parallel": true,
+  "availableProcessors": 8
 }
 ```
 
-## 技术栈
+## Performance
+
+The parallel implementation uses Java parallel streams to leverage multiple CPU cores:
+- Typically 2-4x faster on multi-core systems
+- Performance scales with available processor cores
+- Uses `ThreadLocalRandom` for thread-safe random number generation
+
+## Technology Stack
 
 - Java 11
 - Spring Boot 2.7.18
 - Maven
+- GitLab CI/CD
+- Claude Code (via AWS Bedrock)
 
-## 项目结构
+## Project Structure
 
 ```
-├── pom.xml
+├── .gitlab-ci.yml                    # CI/CD pipeline configuration
+├── pom.xml                           # Maven dependencies
 ├── src/
 │   └── main/
 │       ├── java/
@@ -71,3 +132,7 @@ curl http://localhost:8080/api/calculate-pi?iterations=10000000
 │           └── application.properties
 └── README.md
 ```
+
+## Contributing
+
+When creating merge requests, the Claude Code review will automatically run and provide feedback on your changes. Review the comments and address any suggestions before merging.
