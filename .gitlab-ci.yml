@@ -50,6 +50,14 @@ gendev:
         --header "Content-Type: application/json" \
         --data @comment.json \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
+  
+  artifacts:
+    paths:
+      - changes.diff
+      - comment.json
+    expire_in: 7 days
+    when: always
+  
   variables:
     AWS_REGION: "ap-northeast-1"
     CLAUDE_CODE_USE_BEDROCK: "1"
