@@ -40,13 +40,16 @@ gendev:
     - echo "$REVIEW_RESULT"
     - echo "Posting review result as comment to MR..."
     - |
-      ESCAPED_REVIEW=$(echo "$REVIEW_RESULT" | jq -Rs .)
-      echo  "Escaped review result:"
+      echo "$REVIEW_RESULT" | jq -Rs . > escaped_review.txt
+      ESCAPED_REVIEW=$(cat escaped_review.txt)
+      echo "Escaped review result:"
       echo "$ESCAPED_REVIEW"
+      jq -n --arg body "## 🤖 Claude Code Review\n\n${REVIEW_RESULT}" '{body: $body}' > comment.json
+      cat comment.json
       curl --request POST \
         --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
         --header "Content-Type: application/json" \
-        --data "{\"body\": \"## 🤖 Claude Code Review\n\n$ESCAPED_REVIEW\"}" \
+        --data @comment.json \
         "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
   variables:
     AWS_REGION: "ap-northeast-1"
