@@ -21,6 +21,7 @@ gendev:
     - apk update
     - apk add --no-cache git curl bash jq
     - npm install -g @anthropic-ai/claude-code
+    - env
 
   script:
     - echo "Fetching merge request changes..."
@@ -40,6 +41,8 @@ gendev:
     - echo "Posting review result as comment to MR..."
     - |
       ESCAPED_REVIEW=$(echo "$REVIEW_RESULT" | jq -Rs .)
+      echo  "Escaped review result:"
+      echo "$ESCAPED_REVIEW"
       curl --request POST \
         --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
         --header "Content-Type: application/json" \
