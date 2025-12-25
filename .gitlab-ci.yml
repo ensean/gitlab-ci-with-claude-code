@@ -19,19 +19,32 @@ gendev:
     - java
   before_script:
     - apk update
-    - apk add --no-cache git curl bash
+    - apk add --no-cache git curl bash jq
     - npm install -g @anthropic-ai/claude-code
 
   script:
-    - /bin/gitlab-mcp-server || true
-    # Use GENDEV_FLOW_* variables when invoking via web/API triggers with context payloads
-    - echo "$AI_FLOW_INPUT for $AI_FLOW_CONTEXT on $AI_FLOW_EVENT"
-    - >
-      claude
-      -p "${AI_FLOW_INPUT:-'Review this MR and implement the requested changes'}"
-      --permission-mode acceptEdits
-      --allowedTools "Bash(*) Read(*) Edit(*) Write(*) mcp__gitlab"
-      --debug
+    - echo "Fetching merge request changes..."
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - git diff origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME...HEAD > changes.diff
+    - echo "Changed files:"
+    - git diff --name-only origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME...HEAD
+    - echo "Sending changes to Claude Code for review..."
+    - |
+      REVIEW_RESULT=$(claude \
+        -p "Review the code changes in the changes.diff file and provide feedback on code quality, potential issues, and suggestions for improvement." \
+        --permission-mode acceptEdits \
+        --allowedTools "Bash(*) Read(*)" \
+        --debug 2>&1 || echo "Review completed")
+    - echo "Review result:"
+    - echo "$REVIEW_RESULT"
+    - echo "Posting review result as comment to MR..."
+    - |
+      ESCAPED_REVIEW=$(echo "$REVIEW_RESULT" | jq -Rs .)
+      curl --request POST \
+        --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "{\"body\": \"## 🤖 Claude Code Review\n\n$ESCAPED_REVIEW\"}" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
   variables:
     AWS_REGION: "ap-northeast-1"
     CLAUDE_CODE_USE_BEDROCK: "1"
