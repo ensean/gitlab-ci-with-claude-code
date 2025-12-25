@@ -21,7 +21,8 @@ public class PiController {
 
     @GetMapping("/calculate-pi")
     public Map<String, Object> calculatePi(
-            @RequestParam(defaultValue = "1000000") long iterations) {
+            @RequestParam(defaultValue = "1000000") long iterations,
+            @RequestParam(defaultValue = "false") boolean parallel) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -37,7 +38,9 @@ public class PiController {
         }
         
         long startTime = System.currentTimeMillis();
-        double piValue = piCalculatorService.calculatePi(iterations);
+        double piValue = parallel ? 
+            piCalculatorService.calculatePiParallel(iterations) : 
+            piCalculatorService.calculatePi(iterations);
         long endTime = System.currentTimeMillis();
         
         response.put("iterations", iterations);
@@ -45,6 +48,8 @@ public class PiController {
         response.put("actualPi", Math.PI);
         response.put("error", Math.abs(piValue - Math.PI));
         response.put("executionTimeMs", endTime - startTime);
+        response.put("parallel", parallel);
+        response.put("availableProcessors", Runtime.getRuntime().availableProcessors());
         
         return response;
     }
