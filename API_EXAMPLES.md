@@ -36,16 +36,6 @@ curl -X POST http://localhost:8090/api/calculate-pi \
 curl http://localhost:8090/api/health
 ```
 
-### 详细健康信息（Actuator）
-```bash
-curl http://localhost:8090/actuator/health
-```
-
-### 应用指标
-```bash
-curl http://localhost:8090/actuator/metrics
-```
-
 ## 错误处理示例
 
 ### 迭代次数过小

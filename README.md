@@ -76,8 +76,16 @@ mvn test
 # Run specific test class
 mvn test -Dtest=PiCalculatorServiceTest
 
-# Run with coverage report
-mvn test jacoco:report
+# Run tests with coverage report
+mvn clean test
+
+# View coverage report
+open target/site/jacoco/index.html
+```
+
+Coverage reports are automatically generated in `target/site/jacoco/` after running tests.
+
+See [TEST_GUIDE.md](TEST_GUIDE.md) for detailed testing documentation.
 ```
 
 See [TEST_GUIDE.md](TEST_GUIDE.md) for detailed testing documentation.
@@ -134,12 +142,6 @@ curl "http://localhost:8090/api/calculate-pi?iterations=10000000&parallel=true"
 **Endpoint**: `GET /api/health`
 
 Returns service status.
-
-### Actuator Endpoints
-
-- `GET /actuator/health` - Detailed health information
-- `GET /actuator/info` - Application information
-- `GET /actuator/metrics` - Application metrics
 
 
 ## Performance
