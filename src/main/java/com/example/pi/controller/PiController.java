@@ -1,56 +1,81 @@
 package com.example.pi.controller;
 
+import com.example.pi.dto.PiCalculationRequest;
+import com.example.pi.dto.PiCalculationResponse;
 import com.example.pi.service.PiCalculatorService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 @RestController
 @RequestMapping("/api")
+@Validated
 public class PiController {
 
-    @Autowired
-    private PiCalculatorService piCalculatorService;
+    private final PiCalculatorService piCalculatorService;
+    private static final long MAX_ITERATIONS = 100_000_000L;
+    private static final long DEFAULT_ITERATIONS = 1_000_000L;
 
-    private static final long MAX_ITERATIONS = 100000000L;
+    public PiController(PiCalculatorService piCalculatorService) {
+        this.piCalculatorService = piCalculatorService;
+    }
 
     @GetMapping("/calculate-pi")
-    public Map<String, Object> calculatePi(
-            @RequestParam(defaultValue = "1000000") long iterations,
+    public ResponseEntity<PiCalculationResponse> calculatePi(
+            @RequestParam(defaultValue = "1000000") 
+            @Min(value = 1, message = "Iterations must be at least 1")
+            @Max(value = MAX_ITERATIONS, message = "Iterations cannot exceed " + MAX_ITERATIONS)
+            long iterations,
             @RequestParam(defaultValue = "false") boolean parallel) {
         
-        Map<String, Object> response = new HashMap<>();
-        
-        if (iterations <= 0) {
-            response.put("error", "Iterations must be greater than 0");
-            return response;
-        }
-        
-        if (iterations > MAX_ITERATIONS) {
-            response.put("error", "Iterations exceeds maximum allowed value of " + MAX_ITERATIONS);
-            response.put("maxIterations", MAX_ITERATIONS);
-            return response;
-        }
-        
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         double piValue = parallel ? 
             piCalculatorService.calculatePiParallel(iterations) : 
             piCalculatorService.calculatePi(iterations);
-        long endTime = System.currentTimeMillis();
+        long endTime = System.nanoTime();
         
-        response.put("iterations", iterations);
-        response.put("piValue", piValue);
-        response.put("actualPi", Math.PI);
-        response.put("error", Math.abs(piValue - Math.PI));
-        response.put("executionTimeMs", endTime - startTime);
-        response.put("parallel", parallel);
-        response.put("availableProcessors", Runtime.getRuntime().availableProcessors());
+        PiCalculationResponse response = PiCalculationResponse.builder()
+            .iterations(iterations)
+            .piValue(piValue)
+            .actualPi(Math.PI)
+            .error(Math.abs(piValue - Math.PI))
+            .errorPercentage(Math.abs(piValue - Math.PI) / Math.PI * 100)
+            .executionTimeMs((endTime - startTime) / 1_000_000.0)
+            .parallel(parallel)
+            .availableProcessors(Runtime.getRuntime().availableProcessors())
+            .build();
         
-        return response;
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/calculate-pi")
+    public ResponseEntity<PiCalculationResponse> calculatePiPost(@Valid @RequestBody PiCalculationRequest request) {
+        long startTime = System.nanoTime();
+        double piValue = request.isParallel() ? 
+            piCalculatorService.calculatePiParallel(request.getIterations()) : 
+            piCalculatorService.calculatePi(request.getIterations());
+        long endTime = System.nanoTime();
+        
+        PiCalculationResponse response = PiCalculationResponse.builder()
+            .iterations(request.getIterations())
+            .piValue(piValue)
+            .actualPi(Math.PI)
+            .error(Math.abs(piValue - Math.PI))
+            .errorPercentage(Math.abs(piValue - Math.PI) / Math.PI * 100)
+            .executionTimeMs((endTime - startTime) / 1_000_000.0)
+            .parallel(request.isParallel())
+            .availableProcessors(Runtime.getRuntime().availableProcessors())
+            .build();
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("Pi Calculator Service is running");
     }
 }

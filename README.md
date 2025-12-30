@@ -69,7 +69,7 @@ mvn spring-boot:run
 
 ## API Endpoints
 
-### Calculate Pi
+### Calculate Pi (GET)
 
 **Endpoint**: `GET /api/calculate-pi`
 
@@ -80,10 +80,10 @@ mvn spring-boot:run
 **Example Requests**:
 ```bash
 # Single-threaded with default iterations
-curl http://localhost:8080/api/calculate-pi
+curl http://localhost:8090/api/calculate-pi
 
 # Parallel computation with 10 million iterations
-curl "http://localhost:8080/api/calculate-pi?iterations=10000000&parallel=true"
+curl "http://localhost:8090/api/calculate-pi?iterations=10000000&parallel=true"
 ```
 
 **Response Example**:
@@ -93,11 +93,39 @@ curl "http://localhost:8080/api/calculate-pi?iterations=10000000&parallel=true"
   "piValue": 3.1415926,
   "actualPi": 3.141592653589793,
   "error": 0.0000000535897933,
-  "executionTimeMs": 245,
+  "errorPercentage": 0.0000017,
+  "executionTimeMs": 245.5,
   "parallel": true,
   "availableProcessors": 8
 }
 ```
+
+### Calculate Pi (POST)
+
+**Endpoint**: `POST /api/calculate-pi`
+
+**Request Body**:
+```json
+{
+  "iterations": 10000000,
+  "parallel": true
+}
+```
+
+**Response**: Same as GET endpoint
+
+### Health Check
+
+**Endpoint**: `GET /api/health`
+
+Returns service status.
+
+### Actuator Endpoints
+
+- `GET /actuator/health` - Detailed health information
+- `GET /actuator/info` - Application information
+- `GET /actuator/metrics` - Application metrics
+
 
 ## Performance
 
