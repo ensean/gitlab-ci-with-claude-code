@@ -3,8 +3,10 @@ package com.example.pi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @DisplayName("Application Context Tests")
 class PiCalculatorApplicationTest {
 
