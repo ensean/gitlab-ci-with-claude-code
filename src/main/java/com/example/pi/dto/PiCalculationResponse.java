@@ -10,6 +10,10 @@ public class PiCalculationResponse {
     private boolean parallel;
     private int availableProcessors;
 
+    // Default constructor for Jackson
+    public PiCalculationResponse() {
+    }
+
     private PiCalculationResponse(Builder builder) {
         this.iterations = builder.iterations;
         this.piValue = builder.piValue;
@@ -34,6 +38,16 @@ public class PiCalculationResponse {
     public double getExecutionTimeMs() { return executionTimeMs; }
     public boolean isParallel() { return parallel; }
     public int getAvailableProcessors() { return availableProcessors; }
+
+    // Setters for Jackson
+    public void setIterations(long iterations) { this.iterations = iterations; }
+    public void setPiValue(double piValue) { this.piValue = piValue; }
+    public void setActualPi(double actualPi) { this.actualPi = actualPi; }
+    public void setError(double error) { this.error = error; }
+    public void setErrorPercentage(double errorPercentage) { this.errorPercentage = errorPercentage; }
+    public void setExecutionTimeMs(double executionTimeMs) { this.executionTimeMs = executionTimeMs; }
+    public void setParallel(boolean parallel) { this.parallel = parallel; }
+    public void setAvailableProcessors(int availableProcessors) { this.availableProcessors = availableProcessors; }
 
     public static class Builder {
         private long iterations;

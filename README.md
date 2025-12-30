@@ -67,6 +67,21 @@ gendev:
 mvn spring-boot:run
 ```
 
+## Running Tests
+
+```bash
+# Run all tests
+mvn test
+
+# Run specific test class
+mvn test -Dtest=PiCalculatorServiceTest
+
+# Run with coverage report
+mvn test jacoco:report
+```
+
+See [TEST_GUIDE.md](TEST_GUIDE.md) for detailed testing documentation.
+
 ## API Endpoints
 
 ### Calculate Pi (GET)
