@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, Object> errors = new HashMap<>();
         errors.put("status", HttpStatus.BAD_REQUEST.value());
-        errors.put("error", "参数验证失败");
+        errors.put("error", "parameter validation error");
         
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> 
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, Object> errors = new HashMap<>();
         errors.put("status", HttpStatus.BAD_REQUEST.value());
-        errors.put("error", "参数验证失败");
+        errors.put("error", "parameter validation error");
         errors.put("message", ex.getMessage());
         
         return ResponseEntity.badRequest().body(errors);
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
         Map<String, Object> errors = new HashMap<>();
         errors.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errors.put("error", "服务器内部错误");
+        errors.put("error", "internal server error");
         errors.put("message", ex.getMessage());
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
