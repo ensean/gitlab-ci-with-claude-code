@@ -83,6 +83,6 @@ test:
   tags:
     - java
   script:
-    - mvn test -Ptest
+    - mvn test
   dependencies:
     - build
