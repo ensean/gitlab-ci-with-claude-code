@@ -72,7 +72,7 @@ build:
   tags:
     - java
   script:
-    - mvn clean compile
+    - mvn clean package
   artifacts:
     paths:
       - target/
